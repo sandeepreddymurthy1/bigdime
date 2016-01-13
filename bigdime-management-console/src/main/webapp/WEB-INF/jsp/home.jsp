@@ -11,6 +11,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bigdime Management Console</title>
 <link
+	href="${pageContext.request.contextPath}/resources/css/custom/simplePagination.css" rel="stylesheet">
+<link
 	href="${pageContext.request.contextPath}/resources/css/hot-sneaks/jquery-ui-1.10.4.custom.css" rel="stylesheet">
 <link
 	href="${pageContext.request.contextPath}/resources/css/hot-sneaks/jquery-ui.css" rel="stylesheet">
@@ -55,6 +57,7 @@
 						<li style="display:none">Alerts</li>									
 						</ul>
 					<div class="fullborder">
+					    <div id="message"><h3>No alerts are present for this application</h3></div> 
 						<table id="alertsTable"
 							class="table table-bordered table-striped">
 							<tr>
@@ -80,9 +83,10 @@
 									</div>
 								</td>
 							</tr>
-						</table>
+						</table>						
 					</div>
 			</div>
+								<div id="pagination" class="divpagination"></div>
 		</div>
 		<footer>
 			<nav class="navbar  navbar-default navbar-fixed-bottom">
@@ -100,10 +104,11 @@
 				out.println("<script>parent.location.href='index.jsp'</script>");
 			}%>
 		
-	</script>
+	</script>	
+	
 	<script src="${pageContext.request.contextPath}/resources/jquery/moment.min.js"></script>
 	<script src="${pageContext.request.contextPath}/resources/jquery/jquery-1.10.2.js"></script>
-
+    <script src="${pageContext.request.contextPath}/resources/jquery/scripts/jquery.simplePagination.js"></script>
 	<script src="${pageContext.request.contextPath}/resources/jquery/jquery-ui-1.10.4.custom.js"></script>
 	<script src="${pageContext.request.contextPath}/resources/jquery/scripts/demos.js"></script>
 	<script src="${pageContext.request.contextPath}/resources/jquery/jqwid/jqxcore.js"></script>

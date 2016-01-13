@@ -254,19 +254,18 @@ button {
 
 .vssearch {
 	border: 2px solid #dedede !important;
-	border-radius: 50px;
 	padding: 5px 15px 40px;
 }
 
 .leftborderradius {
-	border-top-left-radius: 20px !important;
-	border-bottom-left-radius: 20px !important;
+/* 	border-top-left-radius: 20px !important;
+	border-bottom-left-radius: 20px !important; */
 }
 
 .rightborderradius {
 	border: none !important;
-	border-top-right-radius: 20px !important;
-	border-bottom-right-radius: 20px !important;
+/* 	border-top-right-radius: 20px !important;
+	border-bottom-right-radius: 20px !important; */
 }
 
 .nopadding {
@@ -332,4 +331,11 @@ button {
   color:#E99237;
   font-size: 1em;
   font-weight : 600;
+}
+
+.divpagination{
+    margin:auto; 
+    width: 100%;
+    padding-left:400px;
+    
 }

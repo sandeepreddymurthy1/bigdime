@@ -26,10 +26,10 @@ public class PropertyDataController {
 	private String qaPort;
 	@Value("${monitoring.prodport}")
 	private String prodPort;
-//	 @CrossOrigin(origins = "http://localhost:8081")
+	@Value("${management.numberofrowsperpage}")
+	private String rowsPerPage;
 	@RequestMapping(method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody ApplicationProperties getApplicationProperties() {
-
 		ApplicationProperties applicationProperties = new ApplicationProperties();
 		applicationProperties.setDevHost(devHost);
 		applicationProperties.setQaHost(qaHost);
@@ -37,6 +37,7 @@ public class PropertyDataController {
 		applicationProperties.setDevPort(devPort);
 		applicationProperties.setQaPort(qaPort);
 		applicationProperties.setProdPort(prodPort);
+		applicationProperties.setRowsPerPage(rowsPerPage);
 		return applicationProperties;
 
 	}

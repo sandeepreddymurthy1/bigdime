@@ -20,8 +20,8 @@ var Alertview = Backbone.View
 				this.collection
 						.each(function(model) {
 							var raisedAlertslength = model.get('raisedAlerts').length;
-							for (i =raisedAlertslength-1;i>=0; i--) {
-
+//							for (i =raisedAlertslength-1;i>=0; i--) {
+								for (var i=0;i<raisedAlertslength;i++) {
 								$("#alertsTable")
 										.append(
 												"<tr><td>"
@@ -141,32 +141,12 @@ function setAlertTable(searchAlertArray) {
 										searchAlertLogic[j][i] = false;
 									}
 								}
-//								var searchAlertText = $(this).find(
-////										"td:eq(" + i + ")").text()
-//										"td:eq(1)").text()
-//										.toUpperCase();
-//								var searchTimeText = $(this).find(
-//										"td:eq(2)").text()
-//										.toUpperCase();
-//								if ((searchAlertText.indexOf(searchAlertArray[i]
-//										.toUpperCase()) != -1
-//										|| searchAlertText == '') ||
-//										(searchTimeText.indexOf(searchAlertArray[i]
-//										.toUpperCase()) != -1
-//										|| searchAlertText == '')) {
-								
-//								if(true){
-//									searchAlertLogic[j][i] = true;
-//								} else {
-//									searchAlertLogic[j][i] = false;
-//								}
 							}
 							j++;
 						})
 	}
 
 	for (var i = 0; i < searchAlertLogic.length; i++) {
-		//    console.log(searchAlertLogic[i]);
 		var output = true;
 		for (var j = 0; j < searchAlertArrayLength; j++) {
 			output = searchAlertLogic[i][j] && output;
@@ -175,9 +155,9 @@ function setAlertTable(searchAlertArray) {
 
 		if (output) {
 
-			$("#alertsTable tr:eq(" + parseInt(i + 2) + ")").show();
+			$("#alertsTable tr:eq(" + parseInt(i + 3) + ")").show();
 		} else {
-			$("#alertsTable tr:eq(" + parseInt(i + 2) + ")").hide();
+			$("#alertsTable tr:eq(" + parseInt(i + 3) + ")").hide();
 		}
 	}
 
@@ -212,4 +192,106 @@ $(document).mouseup(function() {
         pressed = false;
     }
 });
+
+function getDataforApplication(){
+$("#pagination").pagination({
+      itemsOnPage: itemsOnPage,
+	  pages:dateArrayPerApplication[selected["tree"]].length-1,
+	  onInit:getData(dateArrayPerApplication[selected["tree"]][pagepointer],itemsOnPage),
+	  currentPage:pagepointer,
+      onPageClick: function(pageNumber) {    		 
+      getData(dateArrayPerApplication[selected["tree"]][pageNumber-1],itemsOnPage);
+      getDatesUpdates(selected["tree"],pageNumber);
+    }
+});
+
+}
+
+function getDatesUpdates(alertName,pageNumber){
+	var host='';
+	var port='';
+	if(dates=="" ||dates==undefined ||dates==null){
+		dates=Date.now();
+	}
+	if(selected.env.toLowerCase()=="dev"){
+		host=devHost;
+		port=devPort;
+	}else if(selected.env.toLowerCase()=="qa"){
+		host=qaHost;
+		port=qaPort;
+	}else if(selected.env.toLowerCase()=="prod"){
+		host=prodHost;
+		port=prodPort;
+	}
+	if(dateArrayPerApplication[alertName].length<2*pageNumber){
+		$.ajax({
+			  dataType: "json",
+			  url: host+port+datesContext+alertName+'&start='+dateArrayPerApplication[alertName][dateArrayPerApplication[alertName].length-1],
+			  async: false,
+			  success: function(data) {
+				  for(var i=1;i<data.length;i++){
+			        dateArrayPerApplication[alertName].push(data[i]);
+			        }
+			        pagepointer=pageNumber;
+			        getDataforApplication();
+			  }
+		 });
+	}
+}
+//
+//function setDates(alertName,dates){
+//	var host='';
+//	var port='';
+//	if(dates=="" ||dates==undefined ||dates==null){
+//		dates=Date.now();
+//	}
+//    var tmpdatesArray=[];
+//	if(selected.env.toLowerCase()=="dev"){
+//		host=devHost;
+//		port=devPort;
+//	}else if(selected.env.toLowerCase()=="qa"){
+//		host=qaHost;
+//		port=qaPort;
+//	}else if(selected.env.toLowerCase()=="prod"){
+//		host=prodHost;
+//		port=prodPort;
+//	}
+//	$.get(host+port+datesContext+alertName, function(data) {
+//      tmpdatesArray=data;
+//      for(var i=0;i<datasourcesArray.length;i++){
+//    	  if(datasourcesArray[i]==alertName){
+//             dateArrayPerApplication[alertName]=tmpdatesArray;
+//             tmpdatesArray=[];             
+//
+//    	  }
+//	}
+//	});
+//	
+//	return tmpdatesArray;
+//}
+
+//function setPaginationCount(alertName){
+//	var host='';
+//	var port='';
+//	var tmpPaginationArray;
+//	if(selected.env.toLowerCase()=="dev"){
+//		host=devHost;
+//		port=devPort;
+//	}else if(selected.env.toLowerCase()=="qa"){
+//		host=qaHost;
+//		port=qaPort;
+//	}else if(selected.env.toLowerCase()=="prod"){
+//		host=prodHost;
+//		port=prodPort;
+//	}
+//	$.get(host+port+paginationContext+alertName+"&limit=100", function(data) {
+//		tmpPaginationArray=data;
+//	});
+//	return tmpPaginationArray;
+//}
+
+
+
+
+
 

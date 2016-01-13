@@ -3,7 +3,17 @@
  */
 var selected = {}; 
 var jqxlabelsforArray; 
+var offSetTime=Date.now();
+var browserRefreshed=false;
+var datesArray=[];
+var items=100;
+var itemsOnPage=25;
+var datasourcesArray=[];
+var dateArrayPerApplication={};
+var paginationCountPerApplication=[];
+var pagepointer=0;
 $(document).ready(function() {
+	browserRefreshed=true;
 	$(".radioURL select option:first").attr("selected", "selected"); 
 	$('#jqxTabs').jqxTabs({
 		width : '100%',
@@ -15,11 +25,15 @@ $(document).ready(function() {
 		tree : '',
 		tab : $('#jqxTabs').jqxTabs('selectedItem')
 	};
+	getApplicationProperties();
 	getjqxTree($(".radioURL select option:first").text());
+//	getpageCount();
 	$(".searchSource").val(""); 
 	$(".testClwss").tooltip();	
 	$('.jqx-tabs-headerWrapper').hide();
 	$('#alertsTable').hide();
+	$('#pagination').hide();
+//	setDates();
 	setInitialdisplay();
 	
 });
@@ -37,14 +51,18 @@ setsourceforjqxtree = [ {
 		width : '100%'
 	});
 	updateSelected("tree", setsourceforjqxtree[0].label);
-
-
 }
 
 $(".radioURL select").change(function(event) {
 	firstload = [];
 	jqxtreedata = [];
 	initialloaddata = [];
+	datesArray=[];
+	datasourcesArray=[];
+	pagepointer=0;
+	items=100;
+	itemsOnPage=25;
+	dateArrayPerApplication={};
 	updateSelected('env', $(this).val());
 	getjqxTree($(this).val());
 	clearTable();
@@ -56,15 +74,20 @@ $('#jqxTree').on('select', function(event) {
 	var item = $('#jqxTree').jqxTree('getItem', args.element);
 	setbreadcrumbs(item);
 	clearTable();
+	pagepointer=0;
+	items=100;
+	itemsOnPage=25;
 	setdisplay(item.label);
+	
+
 });
 
 $('#jqxTabs').on('selected', function(event) {
 	updateSelected('tab', $('#jqxTabs').jqxTabs('selectedItem'));
-	getData(); 
+	getData();
 });
 
-function setdisplay(selectedjqxtreelabel) {	
+function setdisplay(selectedjqxtreelabel,pageNumber) {	
 
 	updateSelected('tree', selectedjqxtreelabel);
 	item = $('#jqxTree').jqxTree('getSelectedItem');
@@ -74,10 +97,24 @@ function setdisplay(selectedjqxtreelabel) {
 		}); 
 		updateSelected('tab', $('#jqxTabs').jqxTabs('selectedItem'));  
 		$('#alertsTable').hide();
+		$('#pagination').hide();
+		$('#message').hide();
 		setInitialdisplay();
 	} else {
-		$('#alertsTable').show();
-		getData();
+		if(selected.tree != "" && selected.tree != null
+				&& selected.tree != undefined && selected.tree !="Datasource"){
+			if( dateArrayPerApplication[selected["tree"]].length==0){
+			    $('#alertsTable').hide();
+			    $('#message').show();
+			    $('#pagination').hide(); 
+		   }else{
+				$('#alertsTable').show();
+				$('#message').hide();
+			    $('#pagination').show(); 
+		   }
+		}
+		getDataforApplication();
+//		getData(dateArrayPerApplication[selectedjqxtreelabel][0],itemsOnPage);
 	}
 }
 

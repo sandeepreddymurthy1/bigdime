@@ -8,6 +8,8 @@ var prodhost = '';
 var devhost='';
 var qahost='';	
 var context='/bigdime-monitoring-service/rest/alertService/recentalerts?alertName=';
+var datesContext='/bigdime-monitoring-service/rest/alertService/dates?alertName=';
+var paginationContext='/bigdime-monitoring-service/rest/alertService/paginationcount?alertName=';
 var pageSource = [{
 	"env" : "Dev",
 	jqxtree : devhost + port + alertdata,
@@ -21,4 +23,5 @@ var pageSource = [{
 	jqxtree : prodhost + port + alertdata,
 	datasourceurl : {}
 }];
+var dates='/bigdime-monitoring-service/rest/alertService/dates/';
                                                            

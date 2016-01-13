@@ -11,6 +11,7 @@ public class ApplicationProperties {
 	private String devPort;
 	private String qaPort;
 	private String prodPort;
+	private String rowsPerPage;
 	
 	public String getDevHost() {
 		return devHost;
@@ -47,6 +48,12 @@ public class ApplicationProperties {
 	}
 	public void setProdPort(String prodPort) {
 		this.prodPort = prodPort;
+	}
+	public String getRowsPerPage() {
+		return rowsPerPage;
+	}
+	public void setRowsPerPage(String rowsPerPage) {
+		this.rowsPerPage = rowsPerPage;
 	}
 	
 	

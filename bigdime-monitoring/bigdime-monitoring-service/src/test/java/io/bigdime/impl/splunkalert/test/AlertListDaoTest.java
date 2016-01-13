@@ -101,7 +101,7 @@ public class AlertListDaoTest {
 		ReflectionTestUtils.setField(alertListDao,
 				"splunkSourceMetadataRetriever", splunkSourceMetadataRetriever);
 		ReflectionTestUtils.setField(alertListDao, "numberOfDays", "10");
-		Assert.assertTrue(alertListDao.getAlerts("test") != null);
+		Assert.assertNotNull(alertListDao.getAlerts("test",123l,234l));
 	}
 
 	@Test(expectedExceptions = AlertException.class)
@@ -124,13 +124,13 @@ public class AlertListDaoTest {
 		ReflectionTestUtils.setField(alertListDao,
 				"splunkSourceMetadataRetriever", splunkSourceMetadataRetriever);
 		ReflectionTestUtils.setField(alertListDao, "numberOfDays", "10");
-		alertListDao.getAlerts("test");
+		alertListDao.getAlerts("test",123l,234l);
 	}
 
 	@Test(expectedExceptions = AuthorizationException.class)
 	public void getAlertAuthorizationExceptionTest() throws AlertException {
 		AlertListDao alertListDao = new AlertListDao();
-		alertListDao.getAlerts(null);
+		alertListDao.getAlerts(null,123l,234l);
 	}
 
 	@Test
@@ -150,7 +150,7 @@ public class AlertListDaoTest {
 				new ArrayList<ManagedAlert>());
 		ReflectionTestUtils.setField(alertListDao,
 				"splunkSourceMetadataRetriever", splunkSourceMetadataRetriever);
-		Assert.assertTrue(alertListDao.getAlerts("test", 1l, 2l) != null);
+		Assert.assertNotNull(alertListDao.getAlerts("test", 1l, 2));
 	}
 
 	@Test(expectedExceptions = AlertException.class)
@@ -171,7 +171,7 @@ public class AlertListDaoTest {
 				new ArrayList<ManagedAlert>());
 		ReflectionTestUtils.setField(alertListDao,
 				"splunkSourceMetadataRetriever", splunkSourceMetadataRetriever);
-		alertListDao.getAlerts("test", 1l, 2l);
+		alertListDao.getAlerts("test", 1l, 2);
 
 	}
 
@@ -179,7 +179,7 @@ public class AlertListDaoTest {
 	public void getAlertOverloadedMethodAuthorizationExceptionTest()
 			throws AlertException {
 		AlertListDao alertListDao = new AlertListDao();
-		alertListDao.getAlerts(null, 0l, 0l);
+		alertListDao.getAlerts(null, 0l, 0);
 	}
 
 	@Test
@@ -212,5 +212,30 @@ public class AlertListDaoTest {
 				metadataStore);
 		alertListDao.getSetOfAlerts();
 	}
-
+	
+	@Test
+	public void getDatesTest() throws AlertException{
+		AlertListDao alertListDao = new AlertListDao();
+		SplunkSourceMetadataRetriever splunkSourceMetadataRetriever = Mockito
+				.mock(SplunkSourceMetadataRetriever.class);
+		List<Long> list=Mockito.mock(List.class);
+		Mockito.when(splunkSourceMetadataRetriever.getDates((AlertServiceRequest) Mockito.any())).thenReturn(list);
+		ReflectionTestUtils.setField(alertListDao,
+				"splunkSourceMetadataRetriever", splunkSourceMetadataRetriever);
+		Assert.assertNotNull(alertListDao.getDates("test", 123l));
+	}
+	
+	@Test(expectedExceptions = AlertException.class)
+	public void getDatesAuthorizationExceptionTest()
+			throws AlertException {
+		AlertListDao alertListDao = new AlertListDao();
+		SplunkSourceMetadataRetriever splunkSourceMetadataRetriever = Mockito
+				.mock(SplunkSourceMetadataRetriever.class);
+		Mockito.when(splunkSourceMetadataRetriever.getDates((AlertServiceRequest) Mockito.any())).thenThrow(AlertException.class);
+		ReflectionTestUtils.setField(alertListDao,
+				"splunkSourceMetadataRetriever", splunkSourceMetadataRetriever);
+		Assert.assertNotNull(alertListDao.getDates("test", 123l));
+		alertListDao.getDates(null, 0l);
+	}
+	
 }

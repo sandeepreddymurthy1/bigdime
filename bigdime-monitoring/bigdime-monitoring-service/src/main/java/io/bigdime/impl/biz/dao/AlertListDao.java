@@ -9,6 +9,7 @@ import static io.bigdime.impl.biz.constants.ApplicationConstants.WRONGDATEFORMAT
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -78,20 +79,23 @@ public class AlertListDao {
 		return splunkAlertData;
 	}
 
-	public AlertData getAlerts(String alertName) throws AlertException {
-		if (alertName != null) {
-			AlertData alertData = new AlertData();
-			AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
+	public AlertData getAlerts(String alertName,long start, int limit) throws AlertException {
+		AlertData alertData = new AlertData();
+		AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
+		if (alertName != null && start !=WRONGDATEFORMAT && limit !=0) {		
 			alertServiceRequest.setAlertId(alertName);
 			Date currentTime = new Date();
-			alertServiceRequest.setFromDate(new Date(currentTime.getTime()
-					- Long.parseLong(numberOfDays)));
-			alertServiceRequest.setToDate(currentTime);
+//			alertServiceRequest.setFromDate(new Date(currentTime.getTime()
+//					- Long.parseLong(numberOfDays)));
+//			alertServiceRequest.setToDate(currentTime);
+			alertServiceRequest.setFromDate(new Date(start));
+			alertServiceRequest.setLimit(limit);
 			AlertServiceResponse<ManagedAlert> alertServiceResponse = splunkSourceMetadataRetriever
 					.getAlerts(alertServiceRequest);
 			alertData.setRaisedAlerts(alertServiceResponse.getAlerts());
 			return alertData;
-		} else {
+		}else
+		{
 			throw new AuthorizationException(
 					"The parameters provided in the call are  invalid,insufficient or not properly parsed");
 		}
@@ -133,5 +137,20 @@ public class AlertListDao {
 					"No applications found for monitoring");
 		}
 	}
+	
+	 public List<Long> getDates(String alertName,long start) throws AlertException{
+	   AlertServiceRequest alertServiceRequest= new AlertServiceRequest();
+	   alertServiceRequest.setAlertId(alertName);
+	   alertServiceRequest.setFromDate(new Date(start));
+	   List<Long> list=splunkSourceMetadataRetriever.getDates(alertServiceRequest);
+	   return list;
+   }
+	 
+//	 public long getPaginationCount(String alertName, int limit) throws Throwable{		 
+//		 AlertServiceRequest alertServiceRequest= new AlertServiceRequest();
+//		  alertServiceRequest.setAlertId(alertName);
+//		  alertServiceRequest.setLimit(limit);
+//		  return splunkSourceMetadataRetriever.getPaginationCount(alertServiceRequest);
+//	 }
 
 }

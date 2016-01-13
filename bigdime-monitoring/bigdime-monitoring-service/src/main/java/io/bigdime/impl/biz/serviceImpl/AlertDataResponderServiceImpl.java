@@ -5,12 +5,14 @@ package io.bigdime.impl.biz.serviceImpl;
 
 import static io.bigdime.impl.biz.constants.ApplicationConstants.SOURCE_TYPE;
 
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.bigdime.alert.AlertException;
 import io.bigdime.alert.Logger;
 import io.bigdime.alert.LoggerFactory;
 import io.bigdime.impl.biz.dao.AlertListDao;
@@ -61,10 +63,10 @@ public class AlertDataResponderServiceImpl implements AlertDataResponderService 
 	}
 
 	@Override
-	public Response getAlerts(String alertName) {
+	public Response getAlerts(String alertName, long start, int limit) {
 		try {
 			return Response
-					.ok(alertListDao.getAlerts(alertName))
+					.ok(alertListDao.getAlerts(alertName, start, limit))
 					.header("Access-Control-Allow-Origin", "*")
 					.header("Access-Control-Allow-Methods",
 							"POST, GET, OPTIONS, DELETE, PUT")
@@ -123,12 +125,47 @@ public class AlertDataResponderServiceImpl implements AlertDataResponderService 
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
 
-		}catch (Exception e) {
+		} catch (Exception e) {
 			logger.warn(SOURCE_TYPE,
 					"Error occured while calling alert serivce", e.getMessage());
 			return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
 
 		}
 	}
+
+	@Override
+	public Response getDates(String alertName,long start) {
+		try {
+			return Response
+					.ok(alertListDao.getDates(alertName,start))
+					.header("Access-Control-Allow-Origin", "*")
+					.header("Access-Control-Allow-Methods",
+							"POST, GET, OPTIONS, DELETE, PUT")
+					.header("Access-Control-Max-Age", "100000").build();
+		} catch (AlertException e) {
+			logger.warn(SOURCE_TYPE,
+					"Error occured while calling alerts Dates", e.getMessage());
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+
+		}
+	}
+
+//	@Override
+//	public Response getPaginationCount(String alertName, int limit) {
+//		try {
+//			return Response
+//					.ok(alertListDao.getPaginationCount(alertName, limit))
+//					.header("Access-Control-Allow-Origin", "*")
+//					.header("Access-Control-Allow-Methods",
+//							"POST, GET, OPTIONS, DELETE, PUT")
+//					.header("Access-Control-Max-Age", "100000").build();
+//		} catch (Throwable e) {
+//			logger.warn(SOURCE_TYPE,
+//					"Error occured while calling alerts Dates", e.getMessage());
+//			return Response.status(Response.Status.NOT_ACCEPTABLE)
+//					.entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+//		}
+//	}
 
 }

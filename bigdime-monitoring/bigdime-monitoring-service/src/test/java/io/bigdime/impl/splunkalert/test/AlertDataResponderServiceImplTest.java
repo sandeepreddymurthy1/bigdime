@@ -7,6 +7,7 @@ import static io.bigdime.impl.splunkalert.test.constants.TestResourceConstants.E
 import static io.bigdime.impl.splunkalert.test.constants.TestResourceConstants.ENVIRONMENT_VALUE;
 import static io.bigdime.impl.splunkalert.test.constants.TestResourceConstants.SOURCE_TYPE;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -81,33 +82,33 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
 		AlertData alertData = Mockito.mock(AlertData.class);
-		Mockito.when(alertListDao.getAlerts(Mockito.anyString())).thenReturn(
+		Mockito.when(alertListDao.getAlerts(Mockito.anyString(),Mockito.anyLong(),Mockito.anyLong())).thenReturn(
 				alertData);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
-		Assert.assertNotNull(alertDataResponderServiceImpl.getAlerts("test"));
+		Assert.assertNotNull(alertDataResponderServiceImpl.getAlerts("test",123l,234l));
 	}
 	
 	@Test
 	public void getAlertsAuthorizationExceptionTest() throws AlertException  {
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
-		Mockito.when(alertListDao.getAlerts(Mockito.anyString())).thenThrow(
+		Mockito.when(alertListDao.getAlerts(Mockito.anyString(),Mockito.anyLong(),Mockito.anyLong())).thenThrow(
 				AuthorizationException.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
-		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test").getStatus(),HttpStatus.NOT_ACCEPTABLE_406);
+		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",123l,234l).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);
 	}
 
 	@Test
 	public void getAlertsExceptionTest() throws Exception {
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
-		Mockito.when(alertListDao.getAlerts(Mockito.anyString())).thenThrow(
+		Mockito.when(alertListDao.getAlerts(Mockito.anyString(),Mockito.anyLong(),Mockito.anyLong())).thenThrow(
 				Exception.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
-		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test").getStatus(),HttpStatus.SERVICE_UNAVAILABLE_503);
+		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",123l,234l).getStatus(),HttpStatus.SERVICE_UNAVAILABLE_503);
 	}
 
 	@Test
@@ -117,11 +118,11 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 		AlertData alertData = Mockito.mock(AlertData.class);
 		Mockito.when(
 				alertListDao.getAlerts(Mockito.anyString(), Mockito.anyLong(),
-						Mockito.anyLong())).thenReturn(alertData);
+						Mockito.anyInt())).thenReturn(alertData);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
 		Assert.assertNotNull(alertDataResponderServiceImpl.getAlerts("test",
-				1l, 2l));
+				1l, 2));
 	}
 
 	@Test
@@ -130,25 +131,25 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
 		Mockito.when(
 				alertListDao.getAlerts(Mockito.anyString(), Mockito.anyLong(),
-						Mockito.anyLong())).thenThrow(Exception.class);
+						Mockito.anyInt())).thenThrow(Exception.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
-		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",1l, 2l).getStatus(),HttpStatus.SERVICE_UNAVAILABLE_503);
+		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",1l, 2).getStatus(),HttpStatus.SERVICE_UNAVAILABLE_503);
 	}
 	
 
 	@Test
-	public void getAlertsOverloadedMethodAuthorizationExceptionTest() throws Exception {
+	public void getAlertsOverloadedMethodAuthorizationExceptionTest() throws AuthorizationException, AlertException {
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
 		Mockito.when(
 				alertListDao.getAlerts(Mockito.anyString(), Mockito.anyLong(),
-						Mockito.anyLong())).thenThrow(AuthorizationException.class);
+						Mockito.anyInt())).thenThrow(AuthorizationException.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
-		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",1l, 2l).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);
+		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",1l, 2).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);
 	}
-	
+		
 	@Test
     public void getSetOfAlertsTest() throws MetadataAccessException{
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
@@ -182,6 +183,29 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
 		Assert.assertEquals(alertDataResponderServiceImpl.getSetOfAlerts().getStatus(),HttpStatus.SERVICE_UNAVAILABLE_503);
+	}
+	
+	@Test
+	public void getDates() throws AlertException{
+		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
+		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
+		List<Long> list=Mockito.mock(List.class);
+		Mockito.when(
+				alertListDao.getDates(Mockito.anyString(), Mockito.anyLong())).thenReturn(list);
+		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
+				"alertListDao", alertListDao);
+		Assert.assertEquals(alertDataResponderServiceImpl.getDates("test",1l).getStatus(),HttpStatus.OK_200);		
+	}
+	
+	@Test
+	public void getDatesAlertExceptionTest() throws AlertException{
+		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
+		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
+		Mockito.when(
+				alertListDao.getDates(Mockito.anyString(), Mockito.anyLong())).thenThrow(AlertException.class);
+		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
+				"alertListDao", alertListDao);
+		Assert.assertEquals(alertDataResponderServiceImpl.getDates("test",1l).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);	
 	}
 	
 }

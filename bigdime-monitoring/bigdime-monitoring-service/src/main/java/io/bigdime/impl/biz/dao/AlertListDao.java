@@ -21,6 +21,7 @@ import io.bigdime.adaptor.metadata.MetadataStore;
 import io.bigdime.alert.AlertException;
 import io.bigdime.alert.AlertServiceRequest;
 import io.bigdime.alert.AlertServiceResponse;
+import io.bigdime.alert.InvalidDataTypeException;
 import io.bigdime.alert.Logger;
 import io.bigdime.alert.LoggerFactory;
 import io.bigdime.alert.ManagedAlert;
@@ -78,16 +79,25 @@ public class AlertListDao {
 
 		return splunkAlertData;
 	}
+	
+	/**
+	 * This method is used to make calls for alert data from the
+	 * implementation class.
+      * @param alertName
+	 * Application name for which the alerts would be fetched
+	 * @param start 
+	 * start date for the search in long format
+	 * @param limit
+	 * Limits the number of alerts to be fetched.
+	 * @return AlertData object which wraps the list of alert objects.
+	 * @throws AlertException
+	 */
 
 	public AlertData getAlerts(String alertName,long start, int limit) throws AlertException {
 		AlertData alertData = new AlertData();
 		AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
 		if (alertName != null && start !=WRONGDATEFORMAT && limit !=0) {		
 			alertServiceRequest.setAlertId(alertName);
-			Date currentTime = new Date();
-//			alertServiceRequest.setFromDate(new Date(currentTime.getTime()
-//					- Long.parseLong(numberOfDays)));
-//			alertServiceRequest.setToDate(currentTime);
 			alertServiceRequest.setFromDate(new Date(start));
 			alertServiceRequest.setLimit(limit);
 			AlertServiceResponse<ManagedAlert> alertServiceResponse = splunkSourceMetadataRetriever
@@ -96,11 +106,23 @@ public class AlertListDao {
 			return alertData;
 		}else
 		{
-			throw new AuthorizationException(
+			throw new InvalidDataTypeException(
 					"The parameters provided in the call are  invalid,insufficient or not properly parsed");
 		}
 	}
 
+	/**
+	 * This method is used to make calls for alert data from the
+	 * implementation class
+	 * @param alertName
+	 * Application name for which the alerts would be fetched
+	 * @param fromDate 
+	 * start date for the search in long format
+	 * @param toDate
+	 * End date for the search in long format
+	 * @return AlertData object which wraps the list of alert objects.
+	 * @throws AlertException
+	 */
 	public AlertData getAlerts(String alertName, long fromDate, long toDate)
 			throws AlertException {
 		if (alertName != null && fromDate != WRONGDATEFORMAT
@@ -116,10 +138,15 @@ public class AlertListDao {
 
 			return alertData;
 		} else {
-			throw new AuthorizationException(
+			throw new InvalidDataTypeException(
 					"The parameters provided in the call are invalid, insufficient or not properly parsed");
 		}
 	}
+	/**
+	 * This method is used fetch the list of applications from metadata
+	 * @return ArrayNode object which wraps the list of applications.
+	 * @throws MetadataAccessException
+	 */
 	
 	public ArrayNode getSetOfAlerts() throws MetadataAccessException {
 		Set<String> datasourceSet = metadataStore.getDataSources();
@@ -137,7 +164,15 @@ public class AlertListDao {
 					"No applications found for monitoring");
 		}
 	}
-	
+	/**
+	 * This method would return the list of offset dates from the implementation depending on the offset values defined by AlertServiceRequest.offset
+	 * @param alertName
+	 * Application name for which the alerts would be fetched
+	 * @param start
+	 * start date for the search in long format
+	 * @return
+	 * @throws AlertException
+	 */
 	 public List<Long> getDates(String alertName,long start) throws AlertException{
 	   AlertServiceRequest alertServiceRequest= new AlertServiceRequest();
 	   alertServiceRequest.setAlertId(alertName);
@@ -146,11 +181,4 @@ public class AlertListDao {
 	   return list;
    }
 	 
-//	 public long getPaginationCount(String alertName, int limit) throws Throwable{		 
-//		 AlertServiceRequest alertServiceRequest= new AlertServiceRequest();
-//		  alertServiceRequest.setAlertId(alertName);
-//		  alertServiceRequest.setLimit(limit);
-//		  return splunkSourceMetadataRetriever.getPaginationCount(alertServiceRequest);
-//	 }
-
 }

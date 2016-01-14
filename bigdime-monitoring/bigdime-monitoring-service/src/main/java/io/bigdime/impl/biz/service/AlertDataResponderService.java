@@ -42,7 +42,7 @@ public interface AlertDataResponderService {
 	 * @param alertName
 	 * Application name for which the alerts would be fetched
 	 * @param start 
-	 * start date for the search
+	 * start date for the search in long format
 	 * @param limit
 	 * Limits the number of alerts to be fetched.
 	 * @return Response object wrapping json containing the list of alerts 
@@ -55,12 +55,12 @@ public interface AlertDataResponderService {
 	/**
 	 * getAlerts method is used to make a call for data from the end webservice client.
 	 * The data consists of list of alerts represented in the form of a json
-	 *  * @param alertName
+	 * @param alertName
 	 * Application name for which the alerts would be fetched
 	 * @param fromDate 
-	 * start date for the search
+	 * start date for the search in long format
 	 * @param toDate
-	 * End date for the search
+	 * End date for the search in long format
 	 * @return Response object wrapping json containing the list of alerts 
 	 */
 	public Response getAlerts(@QueryParam("alertName") String alertName,
@@ -81,19 +81,11 @@ public interface AlertDataResponderService {
 	/**
 	 * getAlerts method is used to fetch the offset dates for a given application
 	 * @param Alert name for which offsets need to be fetched
+	 * @param start 
+	 * start date for the search in long format
 	 * @return Response object wrapping json containing the list of alerts 
 	 * 
 	 */
 	public Response getDates(@QueryParam("alertName") String alertName,@QueryParam("start") long start);
 	
-//	@GET
-//	@Produces({ MediaType.APPLICATION_JSON })
-//	@Path("/paginationcount/")
-//	/**
-//	 * This method is uses to the count of alerts for a specific alert.
-//	 * @param Alert name for which count needs to be calculated
-//	 * @return Response object wrapping the count value.
-//	 */
-//	public Response getPaginationCount(@QueryParam("alertName") String alertName,@QueryParam("limit") int limit);
-
 }

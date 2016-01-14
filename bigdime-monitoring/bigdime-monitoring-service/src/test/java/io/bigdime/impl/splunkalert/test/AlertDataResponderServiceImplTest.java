@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import io.bigdime.adaptor.metadata.MetadataAccessException;
 import io.bigdime.alert.AlertException;
+import io.bigdime.alert.InvalidDataTypeException;
 import io.bigdime.alert.Logger;
 import io.bigdime.alert.LoggerFactory;
 import io.bigdime.hbase.client.HbaseManager;
@@ -90,11 +91,11 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 	}
 	
 	@Test
-	public void getAlertsAuthorizationExceptionTest() throws AlertException  {
+	public void getAlertsInvalidDataTypeExceptionTest() throws AlertException  {
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
 		Mockito.when(alertListDao.getAlerts(Mockito.anyString(),Mockito.anyLong(),Mockito.anyLong())).thenThrow(
-				AuthorizationException.class);
+				InvalidDataTypeException.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
 		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",123l,234l).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);
@@ -139,12 +140,12 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 	
 
 	@Test
-	public void getAlertsOverloadedMethodAuthorizationExceptionTest() throws AuthorizationException, AlertException {
+	public void getAlertsOverloadedMethodInvalidDataTypeExceptionTest() throws AuthorizationException, AlertException {
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
 		Mockito.when(
 				alertListDao.getAlerts(Mockito.anyString(), Mockito.anyLong(),
-						Mockito.anyInt())).thenThrow(AuthorizationException.class);
+						Mockito.anyInt())).thenThrow(InvalidDataTypeException.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
 		Assert.assertEquals(alertDataResponderServiceImpl.getAlerts("test",1l, 2).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);
@@ -198,11 +199,11 @@ public class AlertDataResponderServiceImplTest extends PowerMockTestCase{
 	}
 	
 	@Test
-	public void getDatesAlertExceptionTest() throws AlertException{
+	public void getDatesInvalidDataTypeExceptionTest() throws AlertException{
 		AlertDataResponderServiceImpl alertDataResponderServiceImpl = new AlertDataResponderServiceImpl();
 		AlertListDao alertListDao = Mockito.mock(AlertListDao.class);
 		Mockito.when(
-				alertListDao.getDates(Mockito.anyString(), Mockito.anyLong())).thenThrow(AlertException.class);
+				alertListDao.getDates(Mockito.anyString(), Mockito.anyLong())).thenThrow(InvalidDataTypeException.class);
 		ReflectionTestUtils.setField(alertDataResponderServiceImpl,
 				"alertListDao", alertListDao);
 		Assert.assertEquals(alertDataResponderServiceImpl.getDates("test",1l).getStatus(),HttpStatus.NOT_ACCEPTABLE_406);	

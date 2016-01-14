@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.bigdime.alert.AlertException;
+import io.bigdime.alert.InvalidDataTypeException;
 import io.bigdime.alert.Logger;
 import io.bigdime.alert.LoggerFactory;
 import io.bigdime.impl.biz.dao.AlertListDao;
@@ -71,7 +72,7 @@ public class AlertDataResponderServiceImpl implements AlertDataResponderService 
 					.header("Access-Control-Allow-Methods",
 							"POST, GET, OPTIONS, DELETE, PUT")
 					.header("Access-Control-Max-Age", "100000").build();
-		} catch (AuthorizationException e) {
+		} catch (InvalidDataTypeException e) {
 			logger.warn(SOURCE_TYPE,
 					"Error occured while calling alert serivce", e.getMessage());
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
@@ -95,7 +96,7 @@ public class AlertDataResponderServiceImpl implements AlertDataResponderService 
 					.header("Access-Control-Allow-Methods",
 							"POST, GET, OPTIONS, DELETE, PUT")
 					.header("Access-Control-Max-Age", "100000").build();
-		} catch (AuthorizationException e) {
+		} catch (InvalidDataTypeException e) {
 			logger.warn(SOURCE_TYPE,
 					"Error occured while calling alert serivce", e.getMessage());
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
@@ -150,22 +151,4 @@ public class AlertDataResponderServiceImpl implements AlertDataResponderService 
 
 		}
 	}
-
-//	@Override
-//	public Response getPaginationCount(String alertName, int limit) {
-//		try {
-//			return Response
-//					.ok(alertListDao.getPaginationCount(alertName, limit))
-//					.header("Access-Control-Allow-Origin", "*")
-//					.header("Access-Control-Allow-Methods",
-//							"POST, GET, OPTIONS, DELETE, PUT")
-//					.header("Access-Control-Max-Age", "100000").build();
-//		} catch (Throwable e) {
-//			logger.warn(SOURCE_TYPE,
-//					"Error occured while calling alerts Dates", e.getMessage());
-//			return Response.status(Response.Status.NOT_ACCEPTABLE)
-//					.entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
-//		}
-//	}
-
 }

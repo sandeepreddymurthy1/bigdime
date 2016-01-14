@@ -21,6 +21,7 @@ import io.bigdime.adaptor.metadata.MetadataStore;
 import io.bigdime.alert.AlertException;
 import io.bigdime.alert.AlertServiceRequest;
 import io.bigdime.alert.AlertServiceResponse;
+import io.bigdime.alert.InvalidDataTypeException;
 import io.bigdime.alert.Logger;
 import io.bigdime.alert.LoggerFactory;
 import io.bigdime.alert.ManagedAlert;
@@ -127,8 +128,8 @@ public class AlertListDaoTest {
 		alertListDao.getAlerts("test",123l,234l);
 	}
 
-	@Test(expectedExceptions = AuthorizationException.class)
-	public void getAlertAuthorizationExceptionTest() throws AlertException {
+	@Test(expectedExceptions = InvalidDataTypeException.class)
+	public void getAlertInvalidDataTypeExceptionTest() throws AlertException {
 		AlertListDao alertListDao = new AlertListDao();
 		alertListDao.getAlerts(null,123l,234l);
 	}
@@ -175,8 +176,8 @@ public class AlertListDaoTest {
 
 	}
 
-	@Test(expectedExceptions = AuthorizationException.class)
-	public void getAlertOverloadedMethodAuthorizationExceptionTest()
+	@Test(expectedExceptions = InvalidDataTypeException.class)
+	public void getAlertOverloadedMethodInvalidDataTypeExceptionTest()
 			throws AlertException {
 		AlertListDao alertListDao = new AlertListDao();
 		alertListDao.getAlerts(null, 0l, 0);

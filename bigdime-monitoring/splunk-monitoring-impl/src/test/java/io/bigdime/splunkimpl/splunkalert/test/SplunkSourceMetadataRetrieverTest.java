@@ -23,6 +23,7 @@ import io.bigdime.splunkalert.util.HttpClientProvider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -199,4 +200,24 @@ public class SplunkSourceMetadataRetrieverTest extends PowerMockTestCase {
 	   ReflectionTestUtils.setField(splunkSourceMetadataRetriever, "managedAlertService", managedAlertService);
 	   splunkSourceMetadataRetriever.updateAlert(alertMessage, ALERT_STATUS.ACKNOWLEDGED, "test");
    }
+   
+   @Test
+   public void getDatesTest() throws AlertException{
+	   ManagedAlertService managedAlertService =Mockito.mock(ManagedAlertService.class); 
+	   AlertServiceRequest alertServiceRequest=Mockito.mock(AlertServiceRequest.class);
+	   List<Long> list=Mockito.mock(List.class);
+	   Mockito.when(managedAlertService.getDates(alertServiceRequest)).thenReturn(list);
+	   ReflectionTestUtils.setField(splunkSourceMetadataRetriever, "managedAlertService", managedAlertService);
+	   Assert.assertNotNull(splunkSourceMetadataRetriever.getDates(alertServiceRequest));
+   }
+   
+   @Test(expectedExceptions = AlertException.class)
+   public void getDatesException() throws AlertException{
+	   ManagedAlertService managedAlertService =Mockito.mock(ManagedAlertService.class); 
+	   AlertServiceRequest alertServiceRequest=Mockito.mock(AlertServiceRequest.class);
+	   Mockito.when(managedAlertService.getDates(alertServiceRequest)).thenThrow(AlertException.class);
+	   ReflectionTestUtils.setField(splunkSourceMetadataRetriever, "managedAlertService", managedAlertService);
+	   splunkSourceMetadataRetriever.getDates(alertServiceRequest);
+   }
+   
 }

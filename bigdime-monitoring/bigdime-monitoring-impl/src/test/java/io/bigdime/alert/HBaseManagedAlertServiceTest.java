@@ -578,4 +578,77 @@ public class HBaseManagedAlertServiceTest extends PowerMockTestCase {
 		Assert.assertFalse(hBaseManagedAlertService.updateAlert(alertMessage,
 				ALERT_STATUS.ACKNOWLEDGED, "test"));
 	}
+	
+	@Test
+	public void getDates() throws AlertException, HBaseClientException, IOException{
+		AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
+		alertServiceRequest.setAlertId("test");
+		alertServiceRequest.setFromDate(new Date());
+		alertServiceRequest.setToDate(new Date());
+		HbaseManager hbaseManager = Mockito.mock(HbaseManager.class);
+		Mockito.doNothing().when(hbaseManager)
+				.retreiveData((DataRetrievalSpecification) Mockito.any());
+		ResultScanner resultScanner = Mockito.mock(ResultScanner.class);
+		Mockito.when(hbaseManager.getResultScanner()).thenReturn(resultScanner);
+		Iterator iterator = Mockito.mock(Iterator.class);
+		Mockito.when(resultScanner.iterator()).thenReturn(iterator);
+		Mockito.when(iterator.hasNext()).thenReturn(true).thenReturn(false);
+		Result result = Mockito.mock(Result.class);	
+		Mockito.when(iterator.next()).thenReturn(result);
+		Mockito.when(result.getRow()).thenReturn("test.123".getBytes());
+		
+		ReflectionTestUtils.setField(hBaseManagedAlertService, "hbaseManager",
+				hbaseManager);
+		List<Long> list = hBaseManagedAlertService .getDates(alertServiceRequest);
+		int i=0;
+		for(Long date:list){
+		Assert.assertEquals(list.get(i).parseLong("123"),123);
+		i++;
+		}
+	}
+	    @Test(expectedExceptions = AlertException.class)
+		public void getDatesAlertException() throws AlertException, HBaseClientException, IOException{			
+			AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
+			alertServiceRequest.setAlertId("test");
+			alertServiceRequest.setFromDate(new Date());
+			alertServiceRequest.setToDate(new Date());
+			HbaseManager hbaseManager = Mockito.mock(HbaseManager.class);
+			Mockito.doNothing().when(hbaseManager)
+					.retreiveData((DataRetrievalSpecification) Mockito.any());
+			ResultScanner resultScanner = Mockito.mock(ResultScanner.class);
+			Mockito.when(hbaseManager.getResultScanner()).thenThrow(AlertException.class);			
+			ReflectionTestUtils.setField(hBaseManagedAlertService, "hbaseManager",
+					hbaseManager);
+		   hBaseManagedAlertService.getDates(alertServiceRequest);    
+	}
+	    @Test(expectedExceptions = AlertException.class)
+		public void getDatesHBaseClientException() throws AlertException, HBaseClientException, IOException{			
+			AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
+			alertServiceRequest.setAlertId("test");
+			alertServiceRequest.setFromDate(new Date());
+			alertServiceRequest.setToDate(new Date());
+			HbaseManager hbaseManager = Mockito.mock(HbaseManager.class);
+			Mockito.doNothing().when(hbaseManager)
+					.retreiveData((DataRetrievalSpecification) Mockito.any());
+			ResultScanner resultScanner = Mockito.mock(ResultScanner.class);
+			Mockito.when(hbaseManager.getResultScanner()).thenThrow(HBaseClientException.class);			
+			ReflectionTestUtils.setField(hBaseManagedAlertService, "hbaseManager",
+					hbaseManager);
+		   hBaseManagedAlertService.getDates(alertServiceRequest);    
+	}
+	    @Test(expectedExceptions = AlertException.class)
+		public void getDatesIOException() throws AlertException, HBaseClientException, IOException{			
+			AlertServiceRequest alertServiceRequest = new AlertServiceRequest();
+			alertServiceRequest.setAlertId("test");
+			alertServiceRequest.setFromDate(new Date());
+			alertServiceRequest.setToDate(new Date());
+			HbaseManager hbaseManager = Mockito.mock(HbaseManager.class);
+			Mockito.doNothing().when(hbaseManager)
+					.retreiveData((DataRetrievalSpecification) Mockito.any());
+			ResultScanner resultScanner = Mockito.mock(ResultScanner.class);
+			Mockito.when(hbaseManager.getResultScanner()).thenThrow(IOException.class);			
+			ReflectionTestUtils.setField(hBaseManagedAlertService, "hbaseManager",
+					hbaseManager);
+		   hBaseManagedAlertService.getDates(alertServiceRequest);    
+	}
 }

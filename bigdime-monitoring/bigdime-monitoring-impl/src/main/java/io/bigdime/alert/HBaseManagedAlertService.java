@@ -39,11 +39,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
+import org.apache.hadoop.hbase.filter.PageFilter;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
+import org.apache.hadoop.hbase.filter.ValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
@@ -72,6 +80,8 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 	private HbaseManager hbaseManager;
 	@Value("${hbase.alert.table}")
 	private String alertTable;
+	@Value("${monitoring.numberofdays}")
+	private String numberOfDays;
 
 	/**
 	 * Get the list of alerts for the given request from HBase.
@@ -81,15 +91,20 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 	@Override
 	public AlertServiceResponse<ManagedAlert> getAlerts(
 			AlertServiceRequest alertServiceRequest) throws AlertException {
-		ManagedAlert managedAlert;
 		AlertServiceResponse<ManagedAlert> alertServiceResponse = new AlertServiceResponse<ManagedAlert>();
 		List<ManagedAlert> managedAlertList = new ArrayList<ManagedAlert>();
 		String startRow = alertServiceRequest.getAlertId() + "."
 				+ String.valueOf(alertServiceRequest.getFromDate().getTime());
-		String stopRow = alertServiceRequest.getAlertId() + "."
-				+ String.valueOf(alertServiceRequest.getToDate().getTime());
-		Scan scan = new Scan(Bytes.toBytes(startRow), Bytes.toBytes(stopRow));
-
+		Scan scan = new Scan(Bytes.toBytes(startRow));
+		PageFilter limitFilter = new PageFilter(alertServiceRequest.getLimit());
+		FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+		SingleColumnValueFilter logLevelFilter=new SingleColumnValueFilter(ALERT_COLUMN_FAMILY_NAME,ALERT_ALERT_LOG_LEVEL_COLUMN,CompareOp.EQUAL,Bytes.toBytes("error"));
+		SingleColumnValueFilter adaptorFilter=new SingleColumnValueFilter(ALERT_COLUMN_FAMILY_NAME,ALERT_ADAPTOR_NAME_COLUMN,CompareOp.EQUAL,Bytes.toBytes(alertServiceRequest.getAlertId()));
+		filterList.addFilter(logLevelFilter);
+		filterList.addFilter(adaptorFilter);
+		filterList.addFilter(limitFilter);
+		scan.setFilter(filterList);	
+		scan.setReversed(true);
 		try {
 			DataRetrievalSpecification.Builder dataRetrievalSpecificationBuilder = new DataRetrievalSpecification.Builder();
 			DataRetrievalSpecification dataRetrievalSpecification = dataRetrievalSpecificationBuilder
@@ -97,8 +112,7 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 			hbaseManager.retreiveData(dataRetrievalSpecification);
 			ResultScanner scanner = hbaseManager.getResultScanner();
 			if (scanner != null) {
-				ObjectMapper objMapper = new ObjectMapper();
-				for (Result r : scanner) {
+				for (Result r : scanner) {					
 					try {
 						ManagedAlert manageAlert = getManagedAlert(r);
 						if (manageAlert != null) {
@@ -223,8 +237,8 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 		String alertLogLevel = "";
 		String alertCode = "";
 		String alertCause = "";
-		String alertComment="";
-		String alertStatus="";
+		String alertComment = "";
+		String alertStatus = "";
 		if (result != null) {
 			if (result.containsColumn(ALERT_COLUMN_FAMILY_NAME,
 					ALERT_ADAPTOR_NAME_COLUMN)) {
@@ -233,7 +247,7 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 						StandardCharsets.UTF_8.toString());
 			}
 			if (result.containsColumn(ALERT_COLUMN_FAMILY_NAME,
-					ALERT_MESSAGE_CONTEXT_COLUMN) ) {
+					ALERT_MESSAGE_CONTEXT_COLUMN)) {
 				messageContext = new String(
 						result.getValue(ALERT_COLUMN_FAMILY_NAME,
 								ALERT_MESSAGE_CONTEXT_COLUMN),
@@ -276,21 +290,22 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 						ALERT_COLUMN_FAMILY_NAME, ALERT_ALERT_CAUSE_COLUMN),
 						StandardCharsets.UTF_8.toString());
 			}
-				    
+
 		}
 
 		if (alertLogLevel.equalsIgnoreCase("ERROR")) {
-			managedAlert.setAlertStatus(ManagedAlertService.ALERT_STATUS.ACKNOWLEDGED);
+			managedAlert
+					.setAlertStatus(ManagedAlertService.ALERT_STATUS.ACKNOWLEDGED);
 			managedAlert.setComment(alertComment);
 			managedAlert.setMessageContext(messageContext);
 			managedAlert.setLogLevel(alertLogLevel.toUpperCase());
-			
+
 			if (!applicationName.isEmpty()) {
 				managedAlert.setApplicationName(applicationName);
 			}
-//			if (!messageContext.isEmpty()) {
-//				managedAlert.setMessageContext(messageContext);
-//			}
+			 if (!messageContext.isEmpty()) {
+			 managedAlert.setMessageContext(messageContext);
+			 }
 			if (!alertCode.isEmpty()) {
 				if (alertCode.equalsIgnoreCase("BIG-0001")) {
 					managedAlert.setType(ALERT_TYPE.ADAPTOR_FAILED_TO_START);
@@ -342,6 +357,8 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 				} else {
 					managedAlert.setSeverity(ALERT_SEVERITY.NORMAL);
 				}
+			} else {
+				managedAlert.setSeverity(ALERT_SEVERITY.NORMAL);
 			}
 
 			if (!alertMessage.isEmpty()) {
@@ -354,8 +371,8 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 					managedAlert.setDateTime(date);
 				} catch (ParseException e) {
 					logger.info(SOURCE_NAME, "Creating Managed Alert",
-							"Unable to parse the date "+e.getMessage());
-				
+							"Unable to parse the date " + e.getMessage());
+
 				}
 			}
 			return managedAlert;
@@ -372,5 +389,55 @@ public class HBaseManagedAlertService implements ManagedAlertService {
 			return new SimpleDateFormat("E MMM d HH:mm:ss 'UTC' yyyy");
 		}
 	};
+	
+    /**
+     * This method return list of offset dates for a given alert
+     * @param AlertServiceRequest
+     * AlertServiceRequest object with alert name,initial offset time and the limit details
+     * @return List
+     * list of offset dates for a given alert
+     */
+	public List<Long> getDates(AlertServiceRequest alertServiceRequest)
+			throws AlertException {
+		List<Long> list = new ArrayList<Long>();
+		String startRow = alertServiceRequest.getAlertId()
+				+ "."
+				+ String.valueOf(alertServiceRequest.getFromDate().getTime());
+		Scan scan = new Scan(Bytes.toBytes(startRow));
+		FilterList filterList = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+		SingleColumnValueFilter logLevelFilter=new SingleColumnValueFilter(ALERT_COLUMN_FAMILY_NAME,ALERT_ALERT_LOG_LEVEL_COLUMN,CompareOp.EQUAL,Bytes.toBytes("error"));
+		SingleColumnValueFilter adaptorFilter=new SingleColumnValueFilter(ALERT_COLUMN_FAMILY_NAME,ALERT_ADAPTOR_NAME_COLUMN,CompareOp.EQUAL,Bytes.toBytes(alertServiceRequest.getAlertId()));
+		PageFilter limitFilter = new PageFilter(1000);
+		filterList.addFilter(logLevelFilter);
+		filterList.addFilter(adaptorFilter);
+		filterList.addFilter(limitFilter);
+		scan.setFilter(filterList);
+		scan.setReversed(true);
+		try {
+			DataRetrievalSpecification.Builder dataRetrievalSpecificationBuilder = new DataRetrievalSpecification.Builder();
+			DataRetrievalSpecification dataRetrievalSpecification = dataRetrievalSpecificationBuilder
+					.withTableName(alertTable).withScan(scan).build();
+			hbaseManager.retreiveData(dataRetrievalSpecification);
+			ResultScanner scanner = hbaseManager.getResultScanner();
+			if (scanner != null) {
+				int counter=0;
+				for (Result result : scanner) {
+				    String alertDateTime = new String(result.getRow());
+					String datetime = StringUtils.remove(alertDateTime,
+							alertServiceRequest.getAlertId() + ".");
+					if(counter%100==0 || counter==0){
+					list.add(Long.parseLong(datetime));
+					}
+					counter++;
+				}
+				scanner.close();
+			}
+			return list;
+		} catch (HBaseClientException | IOException e) {
+			throw new AlertException("Unable to get data from HBase due to  "
+					+ e.getMessage());
+		}
 
+	}
+	
 }
